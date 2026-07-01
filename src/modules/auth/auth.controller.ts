@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import HttpStatus from "http-status";
 import { catchAsync } from "../../utils/catchAsync";
 import { authService } from "./auth.service";
-import { sendResponse } from "../../utils/sendResponse"
+import { sendResponse } from "../../utils/sendResponse";
 
 const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const payload = req.body;
