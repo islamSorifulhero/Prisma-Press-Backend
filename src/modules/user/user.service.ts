@@ -3,7 +3,6 @@ import config from "../../config";
 import { RegisterUserPayload } from "./user.interface";
 import { prisma } from "../../lib/prisma";
 
-
 const registerUserIntoDB = async (payload: RegisterUserPayload) => {
 
     const { name, email, password, profilePhoto } = payload;
@@ -22,15 +21,20 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
             name,
             email,
             password: hashedPassword,
+            profile: {
+                create: {
+                    profilePhoto
+                }
+            }
         }
-    })
+    });
 
-    await prisma.profile.create({
-        data: {
-            userId: createdUser.id,
-            profilePhoto
-        }
-    })
+    // await prisma.profile.create({
+    //     data: {
+    //         userId: createdUser.id,
+    //         profilePhoto
+    //     }
+    // })
 
     const user = await prisma.user.findUnique({
         where: {
@@ -47,9 +51,53 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
 
     return user;
 
+}
+const getMyProfileFromDB = async (userId: string) => {
+    const user = await prisma.user.findUniqueOrThrow({
+        where: { id: userId },
+        omit: {
+            password: true
+        },
+        include: {
+            profile: true
+        }
+    });
+
+    return user;
+}
+
+const updateMyProfileInDB = async (userId: string, payload: any) => {
+    const { name, email, profilePhoto, bio } = payload;
+
+    const updatedUser = await prisma.user.updated({
+        where: { id: userId },
+
+        data: {
+            name,
+            email,
+            profile: {
+                update: {
+                    profilePhoto,
+                    bio
+                }
+            }
+        },
+
+        omi: {
+            password: true
+        },
+
+        include: {
+            profile: true
+        }
+    })
+
+    return updatedUser;
 
 }
 
 export const userService = {
-    registerUserIntoDB
+    registerUserIntoDB,
+    getMyProfileFromDB,
+    updateMyProfileInDB
 }
